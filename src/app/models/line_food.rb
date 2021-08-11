@@ -3,7 +3,7 @@ class LineFood < ApplicationRecord
   belongs_to :restaurant
   belongs_to :order, optional: true
 
-  validates :count, numericality { greater_than: 0 }
+  validates :count, numericality: { greater_than: 0 }
 
   scope :active, -> { where(active: true) }
   # scope => モデルそのものや関連するオブジェクトに対するクエリを指定。
