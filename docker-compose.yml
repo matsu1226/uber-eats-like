@@ -8,8 +8,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: password
       # MYSQL_USER: root
-  web:
-    build: .
+  api:
+    build: ./src/
     command: bundle exec rails s -p 3000 -b '0.0.0.0'
     volumes:
       - ./src:/app
@@ -17,6 +17,12 @@ services:
       - "3000:3000"
     depends_on:
       - db
-
+  front:
+    build: ./front/
+    command: sh -c 'cd react-sample && yarn start'
+    volumes: 
+      - ./front:/usr/src/app
+    ports: 
+      - "3001:3000"
 volumes:
   mysql_data:   
