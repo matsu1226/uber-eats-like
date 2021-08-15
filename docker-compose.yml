@@ -19,6 +19,8 @@ services:
       - db
   front:
     build: ./front/
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     command: sh -c 'cd react-sample && yarn start'
     volumes: 
       - ./front:/usr/src/app

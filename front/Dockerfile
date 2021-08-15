@@ -1,6 +1,8 @@
 # base image
 FROM node:12
 
+# env CHOKIDAR_USEPOLLING=true
+
 WORKDIR /usr/src/app
 
 # install and cache app dependencies
