@@ -19,7 +19,7 @@ class Api::V1::LineFoodsController < ApplicationController
   # 仮注文の作成
   def create
     # 例外パターン：他店舗での仮注文(アクティブなLineFood)がすでにある場合 => (早期リターン)
-    if LineFood.actiive.other_restaurant(@ordered_food.restaurant.id).exists?
+    if LineFood.active.other_restaurant(@ordered_food.restaurant.id).exists?
       return render json: {
         existing_restaurant: LineFood.other_restaurant(@ordered_food.id).first.restaurant.name,
         new_restaurant: Food.find(params[:food_id]).restaurant.name,
@@ -39,8 +39,8 @@ class Api::V1::LineFoodsController < ApplicationController
 
   # 仮注文の例外パターン
   def replace
-    LineFood.actiive.other_restaurant(@ordered_food.restaurant.id).each do |line_food|
-      line_food.update_attribute(:actiive, false)
+    LineFood.active.other_restaurant(@ordered_food.restaurant.id).each do |line_food|
+      line_food.update_attribute(:active, false)
     end
 
     set_line_food(@ordered_food)

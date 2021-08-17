@@ -1,12 +1,13 @@
 import React, { Fragment, useEffect, useReducer, useState } from 'react';
 import styled from 'styled-components';             // https://styled-components.com/
-import { Link } from 'react-router-dom';
+import { useHistory, Link } from 'react-router-dom';
 
 // components
 import { LocalMallIcon } from '../components/Icons';
 import { FoodWrapper } from '../components/FoodWrapper';
 import Skeleton from '@material-ui/lab/Skeleton';
 import { FoodOrderDialog } from '../components/FoodOrderDialog';
+import { NewOrderConfirmDialog } from '../components/NewOrderConfirmDialog';
 
 // reducers
 import {
@@ -17,6 +18,7 @@ import {
 
 // apis
 import { fetchFoods } from '../apis/foods';
+import { postLineFoods, replaceLineFoods } from '../apis/line_foods';
 
 // images
 import MainLogo from '../images/logo.png';
@@ -24,6 +26,7 @@ import FoodImage from '../images/food-image.jpg';
 
 // constants
 import { REQUEST_STATE } from '../constants';
+import { HTTP_STATUS_CODE } from '../constants';
 import { COLORS } from '../style_constants';
 
 
@@ -58,22 +61,23 @@ const ItemWrapper = styled.div`
 `;
 
 
-const submitOrder = () => {
-  // 後ほど仮注文のAPIを実装します
-  console.log('登録ボタンが押された！')
-}
-
 
 export const Foods = ({
   match
 }) => {
-  const [foodsState, dispatch] = useReducer(foodsReducer, foodsInitialState);
-  const initialState = {       //modal用
-    isOpenOrderDialog: false,
-    selectedFood: null,
-    selectedFoodCount: 1,
+  //modal用のstate
+  const initialState = {       
+    isOpenOrderDialog: false,     // 注文モーダルの表示
+    selectedFood: null,           // 選択した商品
+    selectedFoodCount: 1,         // 商品数
+    isOpenNewOrderDialog: false,  // 注文モーダルの表示(他店舗の注文が既にあったとき用)
+    existingRestaurantName: '',   // 他店舗の名前
+    newRestaurantName: '',        // 今選択した店舗の名前
   }
-  const [state, setState] = useState(initialState)
+
+  const history = useHistory();
+  const [foodsState, dispatch] = useReducer(foodsReducer, foodsInitialState);
+  const [state, setState] = useState(initialState);
 
   useEffect(() => {
     dispatch({type: foodsActionTypes.FETCHING })
@@ -86,7 +90,34 @@ export const Foods = ({
         }
       });
     })
-  }, [])
+  }, [match.params.restaurantsId]);
+
+  const submitOrder = () => {
+    postLineFoods({
+      foodId: state.selectedFood.id,
+      count: state.selectedFoodCount,
+    }).then(() => history.push('/orders'))    // '/orders'に遷移
+      .catch((e) => {
+        if (e.response.status === HTTP_STATUS_CODE.NOT_ACCEPTABLE) {  //例外パターン(line_foods#create参照)
+          setState({
+            ...state,
+            isOpenOrderDialog: false,
+            isOpenNewOrderDialog: true,
+            existingRestaurantName: e.response.data.existing_restaurant,
+            newRestaurantName: e.response.data.new_restaurant,
+          })
+        } else {
+          throw e;
+        }
+      })
+  };
+
+  const replaceOrder = () => {
+    replaceLineFoods({
+      foodId: state.selectedFood.id,
+      count: state.selectedFoodCount,
+    }).then(() => history.push('/orders'))
+  };
 
   return (
     <Fragment>
@@ -151,6 +182,16 @@ export const Foods = ({
             selectedFood: null,
             selectedFoodCount: 1,
           })}  
+        />
+      }
+      {
+        state.isOpenNewOrderDialog &&
+        <NewOrderConfirmDialog
+          isOpen={state.isOpenNewOrderDialog}
+          onClose={() => setState({...state, isOpenNewOrderDialog: false})}
+          existingRestaurantName={state.existingRestaurantName}
+          newRestaurantName={state.newRestaurantName}
+          onClickSubmit={() => replaceOrder()}
         />
       }
     </Fragment>
