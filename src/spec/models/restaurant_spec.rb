@@ -4,9 +4,14 @@ RSpec.describe Restaurant, type: :model do
   let(:restaurant) { FactoryBot.create(:restaurant) }
   subject { restaurant }
 
-  describe "バリデーションのテスト" do
-    it { is_expected.to be_valid }
+  it { should be_valid }
 
+  describe "アソシエーションのテスト" do
+    it { should respond_to(:foods)}
+    it { should respond_to(:line_foods)}
+  end
+
+  describe "バリデーションのテスト" do
     context "空欄で無効になることをテスト" do      
       it "名前" do
         restaurant.name = ''

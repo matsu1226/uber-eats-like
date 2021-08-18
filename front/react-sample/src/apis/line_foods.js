@@ -28,3 +28,13 @@ export const replaceLineFoods = (params) => {
   })
   .catch((e) => { throw e; })
 }
+
+
+export const fetchLineFoods = () => {
+  return axios.get(lineFoods)
+  .then(res => {
+    return res.data   // LineFoods#index参照  => render json:{ line_food_ids,　restaurant,　count,　amount }, status: :ok
+  })
+  .catch((e) => { throw e; })
+}
+

@@ -79,7 +79,7 @@ export const Foods = ({
   const [foodsState, dispatch] = useReducer(foodsReducer, foodsInitialState);
   const [state, setState] = useState(initialState);
 
-  useEffect(() => {
+  useEffect(() => {     //match.params.restaurantsId(第二引数)が変更されるごとに呼ばれる処理
     dispatch({type: foodsActionTypes.FETCHING })
     fetchFoods(match.params.restaurantsId)   //restaurantIdを受け取り、APIを叩く
     .then((data) => {
